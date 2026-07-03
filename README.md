@@ -8,7 +8,7 @@ This project demonstrates a production-inspired authentication flow with clean a
 
 # 📱 App Overview
 
-AuthPractice is an Android application that demonstrates how to build a scalable authentication system using Firebase Authentication and Jetpack Compose.
+This is an Android application that demonstrates how to build a scalable authentication system using Firebase Authentication and Jetpack Compose.
 
 Instead of simply implementing login functionality, this project focuses on building authentication using real-world Android architecture with proper separation between UI, business logic, and data layers.
 
