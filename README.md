@@ -133,13 +133,11 @@ D --> E[Firebase Authentication]
 
 ---
 
-# 📸 Screenshots / Demo
-
-## Screenshots
+# 📸 Screenshots
 
 | Login | Register | Loading | Home |
 |-------|----------|---------|------|
-| *(Add Screenshot)* | *(Add Screenshot)* | *(Add Screenshot)* | *(Add Screenshot)* |
+| <img src="snapshots/LoginScreen.png" height=500> | <img src="snapshots/RegistrationScreen.png" height=500> | <img src="snapshots/LoadingScreen.png" height=500> | <img src="snapshots/HomeScreen.png" height=500> |
 
 ---
 
