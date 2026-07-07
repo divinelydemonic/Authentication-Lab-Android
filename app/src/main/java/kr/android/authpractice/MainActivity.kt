@@ -40,9 +40,7 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) {
                 viewModel.uiEvents.collect { event ->
                     when (event){
-                        is UiEvent.ShowSnackBar -> {
-                            snackBarHostState.showSnackbar(event.message)
-                        }
+                        is UiEvent.ShowSnackBar -> { snackBarHostState.showSnackbar(event.message) }
                     }
                 }
             }

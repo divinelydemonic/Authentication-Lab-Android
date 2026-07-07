@@ -22,8 +22,7 @@ class AuthViewModelFactory(
         modelClass: Class<T>
     ): T {
 
-        // Verify that the requested ViewModel class
-        // is AuthViewModel.
+        // Verify that the requested ViewModel class is AuthViewModel
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
 
             // Safe because the requested class has already
