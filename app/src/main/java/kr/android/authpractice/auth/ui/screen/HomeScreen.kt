@@ -1,4 +1,4 @@
-package kr.android.authpractice.auth.ui
+package kr.android.authpractice.auth.ui.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

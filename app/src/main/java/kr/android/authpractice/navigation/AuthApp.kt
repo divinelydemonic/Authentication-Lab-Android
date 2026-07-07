@@ -6,9 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import kr.android.authpractice.auth.presentation.authstate.AuthState
 import kr.android.authpractice.auth.presentation.viewmodel.AuthViewModel
-import kr.android.authpractice.auth.ui.HomeScreen
-import kr.android.authpractice.auth.ui.LoadingScreen
-import kr.android.authpractice.auth.ui.AuthenticationScreen
+import kr.android.authpractice.auth.ui.screen.HomeScreen
+import kr.android.authpractice.auth.ui.screen.LoadingScreen
+import kr.android.authpractice.auth.ui.screen.AuthenticationScreen
 
 /**
  * Root composable for the authentication flow.
