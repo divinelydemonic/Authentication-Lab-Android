@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="kr.android.authpractice" />
-                  <option name="mobileSdkAppId" value="1:1018017767734:android:e1b1fbcd59f3d5c5d1d397" />
-                  <option name="projectId" value="authpractice-69ff8" />
-                  <option name="projectNumber" value="1018017767734" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

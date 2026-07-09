@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AuthPractice"
+rootProject.name = "BasicFirebaseAuthentication"
 include(":app")
