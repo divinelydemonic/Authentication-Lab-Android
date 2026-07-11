@@ -1,4 +1,4 @@
-# 🔐 Basic Modern Firebase Authentication
+# 🔐 Authentication Lab
 
 A modern Android authentication application built using **Kotlin**, **Jetpack Compose**, **MVVM**, and **Firebase Authentication**.
 
