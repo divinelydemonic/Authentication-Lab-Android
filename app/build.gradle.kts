@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "kr.android.basicfirebaseauthentication"
+    namespace = "kr.android.authenticationlab"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "kr.android.basicfirebaseauthentication"
+        applicationId = "kr.android.authenticationlab"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
