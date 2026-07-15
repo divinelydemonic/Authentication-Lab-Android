@@ -26,9 +26,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
+import kr.android.authenticationlab.auth.validation.AuthValidator
 
 @Composable
 fun AuthenticationScreen(
@@ -113,7 +115,7 @@ fun AuthenticationScreen(
                 ) {
 
                     //email field
-                    LoginField(
+                    CredentialField(
                         value = email.value,
                         label = "Enter email",
                         onValueChange = { email.value = it },
@@ -124,10 +126,10 @@ fun AuthenticationScreen(
                     )
 
                     //password field
-                    LoginField(
+                    CredentialField(
                         value = password.value,
                         label = "Enter password",
-                        onValueChange = { password.value = it },
+                        onValueChange = { password.value = it.take(AuthValidator.MAX_PASSWORD_LENGTH) },
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
                         leadingIcon = Icons.Default.Password,
@@ -141,7 +143,21 @@ fun AuthenticationScreen(
                         visualTransformation =
                             if (passwordVisible.value) VisualTransformation.None
                             else PasswordVisualTransformation(),
-                        onTrailingIconClick = { passwordVisible.value = !passwordVisible.value }
+                        onTrailingIconClick = { passwordVisible.value = !passwordVisible.value },
+                        supportingText = {
+                            Text(
+                                text = "${password.value.length}/${AuthValidator.MAX_PASSWORD_LENGTH}",
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                color =
+                                    if (password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            )
+                        }
                     )
 
                     Spacer(Modifier.height(8.dp))
@@ -163,7 +179,8 @@ fun AuthenticationScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                             disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                         ),
-                        enabled = email.value.isNotBlank() && password.value.isNotBlank()
+                        enabled =
+                            email.value.isNotBlank() && password.value.isNotBlank() && password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH
                     ) {
                         Text(
                             text = buttonText,
@@ -210,17 +227,18 @@ fun AuthenticationScreen(
 }
 
 @Composable
-fun LoginField(
-    value : String,
-    label : String,
-    onValueChange : (String) -> Unit,
-    keyboardType : KeyboardType,
-    imeAction : ImeAction,
-    leadingIcon : ImageVector,
-    leadingIconContentDescription : String?,
-    trailingIcon : ImageVector? = null,
-    trailingIconContentDescription : String? = null,
-    onTrailingIconClick : (() -> Unit)? = null,
+fun CredentialField(
+    value: String,
+    label: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType,
+    imeAction: ImeAction,
+    leadingIcon: ImageVector,
+    leadingIconContentDescription: String?,
+    trailingIcon: ImageVector? = null,
+    trailingIconContentDescription: String? = null,
+    onTrailingIconClick: (() -> Unit)? = null,
+    supportingText: (@Composable () -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ){
 
@@ -270,6 +288,7 @@ fun LoginField(
             }
         },
         visualTransformation = visualTransformation,
+        supportingText = supportingText,
         colors = OutlinedTextFieldDefaults.colors(
             cursorColor = MaterialTheme.colorScheme.primary,
             unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
@@ -289,8 +308,3 @@ fun LoginField(
         )
     )
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun LoginPreview(){ LoginScreen() }

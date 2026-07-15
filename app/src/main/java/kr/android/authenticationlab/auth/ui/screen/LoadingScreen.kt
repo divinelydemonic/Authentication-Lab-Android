@@ -95,7 +95,3 @@ fun LoadingTextAnimation(
     )
 
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun LoadingPreview(){ LoadingScreen() }
