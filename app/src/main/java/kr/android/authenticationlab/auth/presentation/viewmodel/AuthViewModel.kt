@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -18,6 +19,7 @@ import kr.android.authenticationlab.auth.presentation.authstate.AuthState
 import kr.android.authenticationlab.auth.presentation.event.UiEvent
 import kr.android.authenticationlab.auth.validation.AuthValidator
 import kr.android.authenticationlab.auth.validation.ValidationResult
+import kotlin.time.Duration.Companion.milliseconds
 
 class AuthViewModel(
     private val repository: AuthRepository
@@ -70,8 +72,9 @@ class AuthViewModel(
      */
     fun register(
         email: String,
-        password: String
-    ){
+        password: String,
+        confirmPassword: String
+    ) {
         viewModelScope.launch {
 
             val trimmedEmail = email.trim()
@@ -80,6 +83,9 @@ class AuthViewModel(
                 return@launch
 
             if (!handleValidation(AuthValidator.validatePassword(password)))
+                return@launch
+
+            if (!handleValidation(AuthValidator.validateMatchingPasswords(password, confirmPassword)))
                 return@launch
 
             _authState.value = AuthState.Authenticating
@@ -96,7 +102,7 @@ class AuthViewModel(
                 } else {
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitErrorMessage("Unexpected authentication error occurred.")
+                    emitMessage("Unexpected authentication error occurred.")
                 }
 
             } else {
@@ -105,7 +111,7 @@ class AuthViewModel(
 
                 _currentUser.value = null
                 _authState.value = AuthState.Unauthenticated
-                emitErrorMessage(errorMessage)
+                emitMessage(errorMessage)
 
             }
         }
@@ -154,7 +160,7 @@ class AuthViewModel(
                     // A successful result without user data is unexpected.
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitErrorMessage("Unexpected authentication error occurred.")
+                    emitMessage("Unexpected authentication error occurred.")
                 }
 
             } else {
@@ -165,9 +171,28 @@ class AuthViewModel(
                 // Authentication failed. Emit a user-friendly error message
                 _currentUser.value = null
                 _authState.value = AuthState.Unauthenticated
-                emitErrorMessage(errorMessage)
+                emitMessage(errorMessage)
 
             }
+        }
+    }
+
+    //forgot password
+    fun forgotPassword(email: String) {
+
+        viewModelScope.launch {
+
+            val trimmedEmail = email.trim()
+
+            if (!handleValidation(AuthValidator.validateEmail(trimmedEmail)))
+                return@launch
+
+            val result = repository.forgotPassword(trimmedEmail)
+
+            result.fold(
+                onSuccess = { emitMessage("Password reset email sent successfully.") },
+                onFailure = { exception -> emitMessage(getReadableErrorMessage(exception)) }
+            )
         }
     }
 
@@ -187,7 +212,7 @@ class AuthViewModel(
      * the presentation layer to display
      * an error message.
      */
-    private suspend fun emitErrorMessage(message : String){
+    private suspend fun emitMessage(message : String) {
         _uiEvents.emit(UiEvent.ShowSnackBar(message))
     }
 
@@ -233,7 +258,7 @@ class AuthViewModel(
             ValidationResult.Success -> true
 
             is ValidationResult.Failure -> {
-                emitErrorMessage(result.message)
+                emitMessage(result.message)
                 false
             }
 
