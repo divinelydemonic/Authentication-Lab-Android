@@ -33,7 +33,8 @@ object AuthValidator {
             return ValidationResult.Failure("Password cannot be empty.")
 
         if (password.length !in MIN_PASSWORD_LENGTH..MAX_PASSWORD_LENGTH)
-            return ValidationResult.Failure("Password must be between $MIN_PASSWORD_LENGTH and $MAX_PASSWORD_LENGTH characters long.")
+            return ValidationResult
+                .Failure("Password must be between $MIN_PASSWORD_LENGTH and $MAX_PASSWORD_LENGTH characters long.")
 
         if (!password.any{it.isDigit()})
             return ValidationResult.Failure("Password must have at least one digit.")

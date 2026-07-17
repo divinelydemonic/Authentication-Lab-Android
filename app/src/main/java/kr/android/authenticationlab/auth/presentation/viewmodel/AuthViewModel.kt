@@ -16,6 +16,8 @@ import kr.android.authenticationlab.auth.data.model.UserData
 import kr.android.authenticationlab.auth.data.repository.AuthRepository
 import kr.android.authenticationlab.auth.presentation.authstate.AuthState
 import kr.android.authenticationlab.auth.presentation.event.UiEvent
+import kr.android.authenticationlab.auth.validation.AuthValidator
+import kr.android.authenticationlab.auth.validation.ValidationResult
 
 class AuthViewModel(
     private val repository: AuthRepository
@@ -74,15 +76,11 @@ class AuthViewModel(
 
             val trimmedEmail = email.trim()
 
-            if (trimmedEmail.isBlank()) {
-                emitErrorMessage("Email cannot be empty!")
+            if (!handleValidation(AuthValidator.validateEmail(trimmedEmail)))
                 return@launch
-            }
 
-            if (password.isBlank()) {
-                emitErrorMessage("Password cannot be empty!")
+            if (!handleValidation(AuthValidator.validatePassword(password)))
                 return@launch
-            }
 
             _authState.value = AuthState.Authenticating
 
@@ -129,17 +127,13 @@ class AuthViewModel(
             // Normalize the email by removing leading and trailing whitespace.
             val trimmedEmail = email.trim()
 
-            // Stop the login process if the email is empty.
-            if (trimmedEmail.isBlank()){
-                emitErrorMessage("Email cannot be empty!")
+            // Validate email
+            if (!handleValidation(AuthValidator.validateEmail(trimmedEmail)))
                 return@launch
-            }
 
-            // Stop the login process if the password is empty.
-            if (password.isBlank()){
-                emitErrorMessage("Password cannot be empty!")
+            // Validate password
+            if (!handleValidation(AuthValidator.validatePassword(password)))
                 return@launch
-            }
 
             // Show loading state while authentication is in progress.
             _authState.value = AuthState.Authenticating
@@ -223,6 +217,26 @@ class AuthViewModel(
 
             else ->
                 "Something went wrong. Please try again."
+        }
+    }
+
+    /**
+     * Processes a validation result.
+     * Returns true when validation succeeds.
+     * Emits a snackBar message and returns false when validation fails.
+     */
+    private suspend fun handleValidation(
+        result: ValidationResult
+    ) : Boolean {
+        return when(result) {
+
+            ValidationResult.Success -> true
+
+            is ValidationResult.Failure -> {
+                emitErrorMessage(result.message)
+                false
+            }
+
         }
     }
 
