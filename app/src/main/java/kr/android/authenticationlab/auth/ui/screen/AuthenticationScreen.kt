@@ -11,7 +11,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import kr.android.authenticationlab.auth.presentation.model.AuthScreen
+import kr.android.authenticationlab.auth.presentation.model.AuthScreenMode
 import kr.android.authenticationlab.auth.presentation.model.AuthScreenConfig
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
 import kr.android.authenticationlab.auth.ui.component.AuthScreenCard
@@ -26,16 +26,16 @@ fun AuthenticationScreen(
 ){
 
     //checks login mode or registration mode
-    var currentScreen by remember { mutableStateOf(AuthScreen.LOGIN) }
+    var currentScreen by remember { mutableStateOf(AuthScreenMode.LOGIN) }
 
-    val isLogin = currentScreen == AuthScreen.LOGIN
-    val isRegister = currentScreen == AuthScreen.REGISTER
-    val isForgotPassword = currentScreen == AuthScreen.FORGOT_PASSWORD
+    val isLogin = currentScreen == AuthScreenMode.LOGIN
+    val isRegister = currentScreen == AuthScreenMode.REGISTER
+    val isForgotPassword = currentScreen == AuthScreenMode.FORGOT_PASSWORD
 
     //dynamically changing values according to mode
     val screenConfig = when (currentScreen) {
 
-        AuthScreen.LOGIN ->
+        AuthScreenMode.LOGIN ->
             AuthScreenConfig(
                 title = "Login",
                 buttonText = "Login",
@@ -43,7 +43,7 @@ fun AuthenticationScreen(
                 actionText = "Sign Up"
             )
 
-        AuthScreen.REGISTER ->
+        AuthScreenMode.REGISTER ->
             AuthScreenConfig(
                 title = "Sign Up",
                 buttonText = "Sign Up",
@@ -51,7 +51,7 @@ fun AuthenticationScreen(
                 actionText = "Login"
             )
 
-        AuthScreen.FORGOT_PASSWORD ->
+        AuthScreenMode.FORGOT_PASSWORD ->
             AuthScreenConfig(
                 title = "Forgot Password",
                 buttonText = "Send Email",
@@ -71,18 +71,18 @@ fun AuthenticationScreen(
     val isButtonEnabled =
         when (currentScreen) {
 
-            AuthScreen.LOGIN ->
+            AuthScreenMode.LOGIN ->
                 email.value.isNotBlank() &&
                         password.value.isNotBlank() &&
                         password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH
 
-            AuthScreen.REGISTER ->
+            AuthScreenMode.REGISTER ->
                 email.value.isNotBlank() &&
                         password.value.isNotBlank() &&
                         confirmPassword.value.isNotBlank() &&
                         password.value.length >= AuthValidator.MIN_PASSWORD_LENGTH
 
-            AuthScreen.FORGOT_PASSWORD ->
+            AuthScreenMode.FORGOT_PASSWORD ->
                 email.value.isNotBlank()
         }
 
@@ -107,7 +107,7 @@ fun AuthenticationScreen(
         confirmPassword.value = ""
     }
 
-    fun navigateTo(screen: AuthScreen) { currentScreen = screen }
+    fun navigateTo(screen: AuthScreenMode) { currentScreen = screen }
 
 
     Surface(
@@ -158,20 +158,22 @@ fun AuthenticationScreen(
                     dismissKeyboard()
 
                     when (currentScreen) {
-                        AuthScreen.LOGIN ->
+                        AuthScreenMode.LOGIN ->
                             viewModel.login(email.value, password.value)
 
-                        AuthScreen.REGISTER ->
+                        AuthScreenMode.REGISTER ->
                             viewModel.register(
                                 email.value,
                                 password.value,
                                 confirmPassword.value
                             )
 
-                        AuthScreen.FORGOT_PASSWORD ->
+                        AuthScreenMode.FORGOT_PASSWORD ->
                             viewModel.forgotPassword(email.value)
                     }
-                }
+                },
+
+                navigateToLogin = { navigateTo(AuthScreenMode.LOGIN) }
             )
 
             //footer
@@ -181,9 +183,9 @@ fun AuthenticationScreen(
                 onActionClick = {
                     navigateTo(
                         when (currentScreen) {
-                            AuthScreen.LOGIN -> AuthScreen.REGISTER
-                            AuthScreen.REGISTER,
-                            AuthScreen.FORGOT_PASSWORD -> AuthScreen.LOGIN
+                            AuthScreenMode.LOGIN -> AuthScreenMode.REGISTER
+                            AuthScreenMode.REGISTER,
+                            AuthScreenMode.FORGOT_PASSWORD -> AuthScreenMode.LOGIN
                         }
                     )
                     clearCredentials()
@@ -194,7 +196,7 @@ fun AuthenticationScreen(
             ForgotPassword(
                 isLogin = isLogin,
                 onForgotPasswordClick = {
-                    navigateTo(AuthScreen.FORGOT_PASSWORD)
+                    navigateTo(AuthScreenMode.FORGOT_PASSWORD)
                     clearPasswords()
                 }
             )

@@ -43,7 +43,9 @@ fun AuthScreenCard(
 
     buttonText: String,
     buttonEnabled: Boolean,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+
+    navigateToLogin: () -> Unit
 ){
 
     Card(
@@ -147,7 +149,10 @@ fun AuthScreenCard(
             Spacer(Modifier.height(if (isForgotPassword) 0.dp else 8.dp))
 
             Button(
-                onClick = onButtonClick,
+                onClick = {
+                    onButtonClick()
+                    if (isForgotPassword){ navigateToLogin() }
+                },
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 4.dp,
                     disabledElevation = 0.dp
