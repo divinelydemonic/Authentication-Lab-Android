@@ -190,7 +190,9 @@ class AuthViewModel(
             val result = repository.forgotPassword(trimmedEmail)
 
             result.fold(
-                onSuccess = { emitMessage("Password reset email sent successfully.") },
+                onSuccess = {
+                    emitMessage("If the email is registered,\nyou'll receive password reset instructions shortly.")
+                },
                 onFailure = { exception -> emitMessage(getReadableErrorMessage(exception)) }
             )
         }

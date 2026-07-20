@@ -19,9 +19,7 @@ import androidx.compose.ui.unit.dp
 fun AuthScreenFooter(
     footerText: String,
     actionText: String,
-    isLogin: Boolean,
-    onActionClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onActionClick: () -> Unit
 ){
 
     Row(
@@ -53,19 +51,4 @@ fun AuthScreenFooter(
             )
         }
     }
-
-    if (isLogin){
-        TextButton(
-            onClick = onForgotPasswordClick
-        ) {
-            Text(
-                text = "Forgot Password?",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.8f),
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
-    }
-
 }

@@ -17,6 +17,7 @@ import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
 import kr.android.authenticationlab.auth.ui.component.AuthScreenCard
 import kr.android.authenticationlab.auth.ui.component.AuthScreenFooter
 import kr.android.authenticationlab.auth.ui.component.AuthScreenHeader
+import kr.android.authenticationlab.auth.ui.component.ForgotPassword
 import kr.android.authenticationlab.auth.validation.AuthValidator
 
 @Composable
@@ -136,24 +137,16 @@ fun AuthenticationScreen(
                 onEmailChange = { email.value = it },
 
                 password = password.value,
-                onPasswordChange = {
-                    password.value = it.take(AuthValidator.MAX_PASSWORD_LENGTH)
-                },
+                onPasswordChange = { password.value = it.take(AuthValidator.MAX_PASSWORD_LENGTH) },
 
                 passwordVisible = passwordVisible.value,
-                onPasswordVisibilityChange = {
-                    passwordVisible.value = !passwordVisible.value
-                },
+                onPasswordVisibilityChange = { passwordVisible.value = !passwordVisible.value },
 
                 confirmPassword = confirmPassword.value,
-                onConfirmPasswordChange = {
-                    confirmPassword.value = it.take(AuthValidator.MAX_PASSWORD_LENGTH)
-                },
+                onConfirmPasswordChange = { confirmPassword.value = it.take(AuthValidator.MAX_PASSWORD_LENGTH) },
 
                 confirmPasswordVisible = confirmPasswordVisible.value,
-                onConfirmPasswordVisibilityChange = {
-                    confirmPasswordVisible.value = !confirmPasswordVisible.value
-                },
+                onConfirmPasswordVisibilityChange = { confirmPasswordVisible.value = !confirmPasswordVisible.value },
 
                 isRegister = isRegister,
                 isForgotPassword = isForgotPassword,
@@ -185,7 +178,6 @@ fun AuthenticationScreen(
             AuthScreenFooter(
                 footerText = screenConfig.footerText,
                 actionText = screenConfig.actionText,
-                isLogin = isLogin,
                 onActionClick = {
                     navigateTo(
                         when (currentScreen) {
@@ -194,16 +186,21 @@ fun AuthenticationScreen(
                             AuthScreen.FORGOT_PASSWORD -> AuthScreen.LOGIN
                         }
                     )
-
                     clearCredentials()
-                },
+                }
+            )
+
+            //forgot password
+            ForgotPassword(
+                isLogin = isLogin,
                 onForgotPasswordClick = {
                     navigateTo(AuthScreen.FORGOT_PASSWORD)
                     clearPasswords()
                 }
             )
 
+            //google sign-in
+
         }
     }
-
 }
