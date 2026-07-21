@@ -6,9 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import kr.android.authenticationlab.auth.presentation.authstate.AuthState
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
+import kr.android.authenticationlab.auth.ui.screen.AuthenticationScreen
+import kr.android.authenticationlab.auth.ui.screen.EmailVerificationScreen
 import kr.android.authenticationlab.auth.ui.screen.HomeScreen
 import kr.android.authenticationlab.auth.ui.screen.LoadingScreen
-import kr.android.authenticationlab.auth.ui.screen.AuthenticationScreen
 
 /**
  * Root composable for the authentication flow.
@@ -33,6 +34,6 @@ fun AuthApp(
 
         AuthState.Unauthenticated -> AuthenticationScreen(viewModel)
         AuthState.Authenticated -> HomeScreen(viewModel)
-
+        AuthState.EmailVerificationRequired -> EmailVerificationScreen(viewModel)
     }
 }

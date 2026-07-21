@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,7 +18,6 @@ import kr.android.authenticationlab.auth.presentation.authstate.AuthState
 import kr.android.authenticationlab.auth.presentation.event.UiEvent
 import kr.android.authenticationlab.auth.validation.AuthValidator
 import kr.android.authenticationlab.auth.validation.ValidationResult
-import kotlin.time.Duration.Companion.milliseconds
 
 class AuthViewModel(
     private val repository: AuthRepository
@@ -42,33 +40,67 @@ class AuthViewModel(
     init { checkAuthState() }
 
     /**
-     * Checks whether an authenticated user session already exists.
+     * Checks whether an authenticated Firebase session
+     * already exists when the ViewModel is created.
+     *
+     * If a session exists, verifies the user's email
+     * before granting access to the authenticated area
+     * of the application.
+     *
      * Updates the authentication state and current user
-     * based on the existing authentication session.
+     * based on the verification result.
      */
     private fun checkAuthState() {
 
-        // Retrieve the currently authenticated user from the repository.
-        val user = repository.getCurrentUser()
+        viewModelScope.launch {
 
-        if (user != null) {
-            // An authenticated session exists.
-            _currentUser.value = user
-            _authState.value = AuthState.Authenticated
-        } else {
-            // No authenticated session exists.
-            _currentUser.value = null
-            _authState.value = AuthState.Unauthenticated
+            // Retrieve the currently authenticated user from the repository.
+            val user = repository.getCurrentUser()
+
+            if (user == null) {
+                // No authenticated session exists.
+                _currentUser.value = null
+                _authState.value = AuthState.Unauthenticated
+                return@launch
+            }
+
+            val verificationResult = repository.isEmailVerified()
+
+            verificationResult.fold(
+                onSuccess = { isVerified ->
+                    if (isVerified){
+                        _currentUser.value = user
+                        _authState.value = AuthState.Authenticated
+                    } else {
+                        _currentUser.value = null
+                        _authState.value = AuthState.EmailVerificationRequired
+                        emitMessage("Please verify your email to continue.")
+                    }
+                },
+                onFailure = { exception ->
+                    _currentUser.value = null
+                    _authState.value = AuthState.Unauthenticated
+                    emitMessage(getReadableErrorMessage(exception))
+                }
+            )
         }
 
     }
 
     /**
      * Attempts to register a new user using the provided
-     * email and password.
-     * Updates the authentication state and current user
-     * based on the registration result.
-     * Emits UI events when validation or authentication fails.
+     * email, password, and password confirmation.
+     *
+     * Validates the input, creates a new Firebase Authentication
+     * account, and sends an email verification link to the
+     * registered user.
+     *
+     * On successful registration, transitions the authentication
+     * state to EmailVerificationRequired. The user is not
+     * considered authenticated within the application until
+     * their email has been verified.
+     *
+     * Emits UI events when validation or registration fails.
      */
     fun register(
         email: String,
@@ -92,34 +124,83 @@ class AuthViewModel(
 
             val result = repository.register(trimmedEmail, password)
 
-            if (result.isSuccess) {
-
-                val user = result.getOrNull()
-
-                if (user != null) {
-                    _currentUser.value = user
-                    _authState.value = AuthState.Authenticated
-                } else {
+            result.fold(
+                onSuccess = {
+                    _currentUser.value = null
+                    _authState.value = AuthState.EmailVerificationRequired
+                },
+                onFailure = { exception ->
+                    val errorMessage = getReadableErrorMessage(exception)
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitMessage("Unexpected authentication error occurred.")
+                    emitMessage(errorMessage)
                 }
+            )
+        }
+    }
 
-            } else {
+    /**
+     * Checks whether the currently authenticated user's
+     * email address has been verified.
+     *
+     * Refreshes the user's verification status through the
+     * repository and updates the authentication state
+     * accordingly.
+     *
+     * Emits a user-friendly message when the email has not
+     * yet been verified or when the verification check fails.
+     */
+    fun verifyEmail(){
 
-                val errorMessage = getReadableErrorMessage(result.exceptionOrNull())
+        viewModelScope.launch{
 
-                _currentUser.value = null
-                _authState.value = AuthState.Unauthenticated
-                emitMessage(errorMessage)
+            val result = repository.isEmailVerified()
 
-            }
+            result.fold(
+                onSuccess = { isVerified ->
+                    if (isVerified) _authState.value = AuthState.Authenticated
+                    else {
+                        _authState.value = AuthState.EmailVerificationRequired
+                        emitMessage("Your email has not been verified yet.")
+                    }
+                },
+                onFailure = { exception -> emitMessage(getReadableErrorMessage(exception)) }
+            )
+
+        }
+
+    }
+
+    /**
+     * Requests a new email verification link for the
+     * currently authenticated user.
+     *
+     * Emits a confirmation message when the verification
+     * email is sent successfully, or a user-friendly
+     * error message if the request fails.
+     */
+    fun resendVerificationEmail(){
+        viewModelScope.launch {
+
+            val result = repository.resendVerificationEmail()
+
+            result.fold(
+                onSuccess = { emitMessage("Verification email sent successfully.") },
+                onFailure = { exception -> emitMessage(getReadableErrorMessage(exception)) }
+            )
+
         }
     }
 
     /**
      * Attempts to authenticate the user using the
      * provided email and password.
+     *
+     * After a successful sign-in, checks whether the
+     * user's email address has been verified before
+     * granting access to the authenticated area of
+     * the application.
+     *
      * Updates the authentication state and current user.
      * Emits UI events when validation or authentication fails.
      */
@@ -147,37 +228,53 @@ class AuthViewModel(
             // Request authentication from the repository.
             val result = repository.login(trimmedEmail, password)
 
-            if (result.isSuccess) {
+            result.fold(
+                onSuccess = { user ->
 
-                // Retrieve the authenticated user from the successful result.
-                val user = result.getOrNull()
+                    val verificationResult = repository.isEmailVerified()
 
-                if (user != null) {
-                    // Update the authentication state with the logged-in user.
-                    _currentUser.value = user
-                    _authState.value = AuthState.Authenticated
-                } else {
-                    // A successful result without user data is unexpected.
+                    verificationResult.fold(
+                        onSuccess = { isVerified ->
+                            // Update the authentication state with the logged-in user.
+                            if (isVerified){
+                                _currentUser.value = user
+                                _authState.value = AuthState.Authenticated
+                            } else {
+                                _currentUser.value = null
+                                _authState.value = AuthState.EmailVerificationRequired
+                                emitMessage("Please verify your email before signing in.")
+                            }
+                        },
+                        onFailure = { exception ->
+                            _currentUser.value = null
+                            _authState.value = AuthState.Unauthenticated
+                            emitMessage(getReadableErrorMessage(exception))
+                        }
+                    )
+                },
+                onFailure = { exception ->
+
+                    // Convert the authentication exception into a user-friendly message.
+                    val errorMessage = getReadableErrorMessage(exception)
+
+                    // Authentication failed. Emit a user-friendly error message
                     _currentUser.value = null
                     _authState.value = AuthState.Unauthenticated
-                    emitMessage("Unexpected authentication error occurred.")
+                    emitMessage(errorMessage)
+
                 }
-
-            } else {
-
-                // Convert the authentication exception into a user-friendly message.
-                val errorMessage = getReadableErrorMessage(result.exceptionOrNull())
-
-                // Authentication failed. Emit a user-friendly error message
-                _currentUser.value = null
-                _authState.value = AuthState.Unauthenticated
-                emitMessage(errorMessage)
-
-            }
+            )
         }
     }
 
-    //forgot password
+    /**
+     * Sends a password reset email to the provided
+     * email address after validating the input.
+     *
+     * Emits a confirmation message when the request
+     * succeeds and a user-friendly error message when
+     * the request fails.
+     */
     fun forgotPassword(email: String) {
 
         viewModelScope.launch {
