@@ -89,7 +89,7 @@ class AuthViewModel(
 
     /**
      * Attempts to register a new user using the provided
-     * email, password, and password confirmation.
+     * name, email, password, and password confirmation.
      *
      * Validates the input, creates a new Firebase Authentication
      * account, and sends an email verification link to the
@@ -103,12 +103,14 @@ class AuthViewModel(
      * Emits UI events when validation or registration fails.
      */
     fun register(
+        name: String,
         email: String,
         password: String,
         confirmPassword: String
     ) {
         viewModelScope.launch {
 
+            val trimmedName = name.trim()
             val trimmedEmail = email.trim()
 
             if (!handleValidation(AuthValidator.validateEmail(trimmedEmail)))
@@ -122,7 +124,7 @@ class AuthViewModel(
 
             _authState.value = AuthState.Authenticating
 
-            val result = repository.register(trimmedEmail, password)
+            val result = repository.register(trimmedName, trimmedEmail, password)
 
             result.fold(
                 onSuccess = {
@@ -158,7 +160,10 @@ class AuthViewModel(
 
             result.fold(
                 onSuccess = { isVerified ->
-                    if (isVerified) _authState.value = AuthState.Authenticated
+                    if (isVerified) {
+                        _authState.value = AuthState.Authenticated
+                        _currentUser.value = repository.getCurrentUser()
+                    }
                     else {
                         _authState.value = AuthState.EmailVerificationRequired
                         emitMessage("Your email has not been verified yet.")

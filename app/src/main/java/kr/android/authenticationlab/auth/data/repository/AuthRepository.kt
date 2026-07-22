@@ -18,12 +18,13 @@ interface AuthRepository {
 
     /**
      * Attempts to create a new user account using the provided
-     * email and password.
+     * name, email and password.
      * Sends a verification email to the newly registered user.
      * Returns a successful Result when both operations complete,
      * or a failure if either operation fails.
      */
     suspend fun register(
+        name: String,
         email: String,
         password: String
     ) : Result<Unit>

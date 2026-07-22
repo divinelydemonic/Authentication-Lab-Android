@@ -1,19 +1,29 @@
 package kr.android.authenticationlab.auth.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
+import kr.android.authenticationlab.auth.ui.util.getGreeting
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     viewModel: AuthViewModel
 ){
+
+    val currentUser = viewModel.currentUser.collectAsState().value
+
+    val greeting = currentUser?.name
+        ?.let(::getGreeting)?:"Hello 👋"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -24,6 +34,15 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            Text(
+                text = greeting,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(Modifier.height(32.dp))
 
             Text(
                 text = "Login successful",

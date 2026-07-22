@@ -32,6 +32,7 @@ class FirebaseAuthRepository (
             else -> {
                 UserData(
                     uid = firebaseUser.uid,
+                    name = firebaseUser.displayName.orEmpty(),
                     email = userEmail
                 )
             }
@@ -42,10 +43,15 @@ class FirebaseAuthRepository (
 
     /**
      * Creates a new Firebase Authentication account,
-     * sends a verification email to the newly registered user,
-     * and returns a successful Result when both operations complete.
+     * updates the user's profile with the provided display name,
+     * sends an email verification link,
+     * and returns a successful Result when all operations complete.
+     *
+     * Returns a failed Result if any step in the registration
+     * process fails.
      */
     override suspend fun register(
+        name: String,
         email: String,
         password: String
     ): Result<Unit> {
@@ -54,6 +60,8 @@ class FirebaseAuthRepository (
             val authResult = dataSource.register(email, password)
             val firebaseUser = authResult.user
                 ?: return Result.failure(IllegalStateException("User is missing!"))
+
+            dataSource.updateUserProfile(user = firebaseUser, name = name)
 
             dataSource.sendVerificationEmail(firebaseUser)
 
@@ -141,6 +149,7 @@ class FirebaseAuthRepository (
             return Result.success(
                 UserData(
                     uid = firebaseUser.uid,
+                    name = firebaseUser.displayName.orEmpty(),
                     email = userEmail
                 )
             )

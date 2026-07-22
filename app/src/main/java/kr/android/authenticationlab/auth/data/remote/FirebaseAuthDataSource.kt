@@ -3,6 +3,7 @@ package kr.android.authenticationlab.auth.data.remote
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -22,14 +23,18 @@ class FirebaseAuthDataSource {
     fun getCurrentUser() : FirebaseUser? { return firebaseAuth.currentUser }
 
     /**
-     * Sends an email verification link to the currently
-     * authenticated Firebase user.
-     * This function waits until Firebase completes the request.
-     * Any Firebase exceptions are propagated to the repository layer.
+     * Updates the currently authenticated Firebase user's
+     * profile information.
+     * Stores the provided display name in Firebase Authentication.
+     * Throws an exception if the profile update fails.
      */
-    suspend fun sendVerificationEmail(user : FirebaseUser){
-        user.sendEmailVerification()
-            .await()
+    suspend fun updateUserProfile(
+        user: FirebaseUser,
+        name: String
+    ){
+        val profileUpdates =
+            userProfileChangeRequest { displayName = name }
+        user.updateProfile(profileUpdates).await()
     }
 
     /**
@@ -44,6 +49,17 @@ class FirebaseAuthDataSource {
     ) : AuthResult {
         return firebaseAuth
             .createUserWithEmailAndPassword(email, password)
+            .await()
+    }
+
+    /**
+     * Sends an email verification link to the currently
+     * authenticated Firebase user.
+     * This function waits until Firebase completes the request.
+     * Any Firebase exceptions are propagated to the repository layer.
+     */
+    suspend fun sendVerificationEmail(user : FirebaseUser){
+        user.sendEmailVerification()
             .await()
     }
 
