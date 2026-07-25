@@ -162,7 +162,7 @@ assets/screenshots/authentication.png
 
 ---
 
-## Login Screen
+## Home Screen
 
 > *(Add screenshot here)*
 
@@ -172,7 +172,7 @@ assets/screenshots/login.png
 
 ---
 
-## Registration Screen
+## Email Verification Screen
 
 > *(Add screenshot here)*
 
