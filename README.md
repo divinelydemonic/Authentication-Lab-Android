@@ -167,7 +167,7 @@ assets/screenshots/authentication.png
 > *(Add screenshot here)*
 
 ```
-assets/screenshots/login.png
+assets/screenshots/home.png
 ```
 
 ---
@@ -177,7 +177,7 @@ assets/screenshots/login.png
 > *(Add screenshot here)*
 
 ```
-assets/screenshots/register.png
+assets/screenshots/email-verification.png
 ```
 
 ---
@@ -197,7 +197,7 @@ assets/screenshots/forgot-password.png
 🎥 **YouTube Demo**
 
 ```
-https://youtube.com/your-video-link
+https://youtube.com/video-link
 ```
 
 ---
