@@ -17,10 +17,10 @@ fun getGreeting(
 
     return when (hour) {
 
-        in 5..11 -> "Good Morning, $name 🌅"
-        in 12..16 -> "Good Afternoon, $name 🌇"
-        in 17..20 -> "Good Evening, $name 🌆"
-        in 21 downTo 4 -> "Good Night, $name 🌃"
+        in 5..11 -> "Good Morning 🌅\n $name "
+        in 12..16 -> "Good Afternoon 🌇\n $name "
+        in 17..20 -> "Good Evening 🌆\n $name "
+        in 21 downTo 4 -> "Good Night 🌃\n $name "
         else -> "Hello, $name 👋"
 
     }

@@ -1,54 +1,70 @@
 package kr.android.authenticationlab.auth.data.repository
 
+import kr.android.authenticationlab.auth.data.mapper.toUserData
 import kr.android.authenticationlab.auth.data.model.UserData
 import kr.android.authenticationlab.auth.data.remote.FirebaseAuthDataSource
 
 /**
- * Converts Firebase-specific user models into
- * application-specific user models.
- * This prevents Firebase classes from leaking
- * into the presentation layer.
+ * Repository implementation backed by Firebase Authentication.
+ *
+ * This repository coordinates authentication-related operations through
+ * the FirebaseAuthDataSource and converts Firebase SDK models into
+ * application-specific models.
+ *
+ * The presentation layer interacts only with UserData and Result types,
+ * remaining independent of Firebase Authentication APIs.
  */
 class FirebaseAuthRepository (
     private val dataSource: FirebaseAuthDataSource
 ) : AuthRepository {
 
-    //function to get current user details
+    /**
+     * Returns the currently authenticated user as an application-specific model.
+     *
+     * @return The authenticated UserData, or null if no user is signed in.
+     */
     override fun getCurrentUser(): UserData? {
 
-        //fresh data retrieval from data source when needed
-        val firebaseUser = dataSource.getCurrentUser()
-        val userEmail = firebaseUser?.email
+        val firebaseUser = dataSource.getCurrentUser() ?: return null
 
-        return when {
+        return firebaseUser.toUserData()
+    }
 
-            // No authenticated Firebase user exists
-            (firebaseUser == null) -> null
+    /**
+     * Authenticates the user with Firebase using a Google ID token.
+     *
+     * Converts the authenticated Firebase user into the application's UserData model.
+     *
+     * @param idToken Google ID token obtained from Credential Manager.
+     * @return A Result containing the authenticated UserData on success.
+     */
+    override suspend fun signInWithGoogle(idToken: String): Result<UserData> {
 
-            // No email available for this user
-            (userEmail == null) -> null
+        return try {
 
-            //convert firebase user model to app user model
-            else -> {
-                UserData(
-                    uid = firebaseUser.uid,
-                    name = firebaseUser.displayName.orEmpty(),
-                    email = userEmail
-                )
-            }
+            val firebaseUser = dataSource.signInWithGoogle(idToken)
+                ?: return Result.failure(IllegalStateException("User is missing!"))
+
+            Result.success(firebaseUser.toUserData())
 
         }
+        catch (exception: Exception){ Result.failure(exception) }
+
     }
 
 
     /**
-     * Creates a new Firebase Authentication account,
-     * updates the user's profile with the provided display name,
-     * sends an email verification link,
-     * and returns a successful Result when all operations complete.
+     * Registers a new user with Firebase Authentication.
      *
-     * Returns a failed Result if any step in the registration
-     * process fails.
+     * After successful account creation, this function:
+     * 1. Updates the user's display name.
+     * 2. Sends an email verification link.
+     *
+     * @param name User's display name.
+     * @param email User's email address.
+     * @param password User's password.
+     * @return A successful Result when registration completes.
+     * @throws Exception Propagated as a failed Result if any operation fails.
      */
     override suspend fun register(
         name: String,
@@ -57,8 +73,8 @@ class FirebaseAuthRepository (
     ): Result<Unit> {
 
         return try {
-            val authResult = dataSource.register(email, password)
-            val firebaseUser = authResult.user
+
+            val firebaseUser = dataSource.register(email, password)
                 ?: return Result.failure(IllegalStateException("User is missing!"))
 
             dataSource.updateUserProfile(user = firebaseUser, name = name)
@@ -122,9 +138,14 @@ class FirebaseAuthRepository (
 
 
     /**
-     * Authenticates the user through the Firebase data source,
-     * converts Firebase models into application models, and
-     * returns the authentication result.
+     * Signs in an existing user using email and password.
+     *
+     * Converts the authenticated Firebase user into the application's
+     * UserData model.
+     *
+     * @param email User's email address.
+     * @param password User's password.
+     * @return A Result containing UserData on success.
      */
     override suspend fun login(
         email : String,
@@ -133,26 +154,12 @@ class FirebaseAuthRepository (
 
         try {
 
-            // Authenticate the user through Firebase.
-            val authResult = dataSource.login(email, password)
-
-            // Retrieve the authenticated Firebase user and exception if null
-            val firebaseUser = authResult.user
+            val firebaseUser = dataSource.login(email, password)
                 ?: return Result.failure(IllegalStateException("User is missing!"))
-
-            // Retrieve the authenticated user's email and exception if null
-            val userEmail = firebaseUser.email
-                ?: return Result.failure(IllegalStateException("Email is missing!"))
 
             // Convert the Firebase model into the application's
             // UserData model and return a successful result
-            return Result.success(
-                UserData(
-                    uid = firebaseUser.uid,
-                    name = firebaseUser.displayName.orEmpty(),
-                    email = userEmail
-                )
-            )
+            return Result.success(firebaseUser.toUserData())
 
         }
         catch (exception : Exception) {

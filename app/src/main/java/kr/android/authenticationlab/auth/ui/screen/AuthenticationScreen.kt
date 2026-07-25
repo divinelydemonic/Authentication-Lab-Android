@@ -2,22 +2,24 @@ package kr.android.authenticationlab.auth.ui.screen
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kr.android.authenticationlab.auth.presentation.model.AuthScreenMode
 import kr.android.authenticationlab.auth.presentation.model.AuthScreenConfig
+import kr.android.authenticationlab.auth.presentation.model.AuthScreenMode
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
-import kr.android.authenticationlab.auth.ui.component.AuthScreenCard
-import kr.android.authenticationlab.auth.ui.component.AuthScreenFooter
-import kr.android.authenticationlab.auth.ui.component.AuthScreenHeader
-import kr.android.authenticationlab.auth.ui.component.ForgotPassword
+import kr.android.authenticationlab.auth.ui.component.*
 import kr.android.authenticationlab.auth.validation.AuthValidator
 
 @Composable
@@ -26,7 +28,7 @@ fun AuthenticationScreen(
 ){
 
     //checks login mode or registration mode
-    var currentScreen by remember { mutableStateOf(AuthScreenMode.LOGIN) }
+    var currentScreen by rememberSaveable { mutableStateOf(AuthScreenMode.LOGIN) }
 
     val isLogin = currentScreen == AuthScreenMode.LOGIN
     val isRegister = currentScreen == AuthScreenMode.REGISTER
@@ -60,9 +62,9 @@ fun AuthenticationScreen(
             )
     }
 
-    val name = remember { mutableStateOf("") }
+    val name = rememberSaveable { mutableStateOf("") }
 
-    val email = remember { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
 
     val password = remember { mutableStateOf("") }
     val passwordVisible = remember { mutableStateOf(false) }
@@ -209,6 +211,14 @@ fun AuthenticationScreen(
                     clearPasswords()
                 }
             )
+
+            if (!isForgotPassword){
+
+                AuthScreenDivider()
+
+                //google sign-in
+                GoogleSignIn(viewModel)
+            }
 
         }
     }

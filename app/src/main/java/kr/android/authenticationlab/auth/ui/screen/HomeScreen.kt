@@ -10,7 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kr.android.authenticationlab.auth.presentation.viewmodel.AuthViewModel
 import kr.android.authenticationlab.auth.ui.util.getGreeting
 
@@ -38,8 +40,11 @@ fun HomeScreen(
             Text(
                 text = greeting,
                 fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                lineHeight = 45.sp
             )
 
             Spacer(Modifier.height(32.dp))
@@ -56,6 +61,7 @@ fun HomeScreen(
             Text(
                 text = "Welcome!",
                 fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )

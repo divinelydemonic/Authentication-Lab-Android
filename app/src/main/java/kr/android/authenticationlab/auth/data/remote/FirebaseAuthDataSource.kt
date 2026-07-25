@@ -1,55 +1,96 @@
 package kr.android.authenticationlab.auth.data.remote
 
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.auth.*
 import kotlinx.coroutines.tasks.await
 
 /**
- * Handles direct communication with Firebase Authentication.
- * This class is responsible for interacting with Firebase SDK APIs.
- * It should not contain UI logic or application-specific models.
+ * Data source responsible for direct communication with Firebase Authentication.
+ *
+ * This class encapsulates all Firebase Authentication SDK calls and exposes
+ * Firebase-specific models to the repository layer.
+ *
+ * It should not contain business logic, UI logic, or application-specific models.
  */
 class FirebaseAuthDataSource {
 
-    //firebase auth instance for dependency
+    // Firebase Authentication instance used for all authentication operations.
     private val firebaseAuth = FirebaseAuth.getInstance()
 
     /**
      * Returns the currently authenticated Firebase user.
-     * Returns null if no user session exists on the device.
+     *
+     * @return The authenticated [FirebaseUser], or null if no user is signed in.
      */
     fun getCurrentUser() : FirebaseUser? { return firebaseAuth.currentUser }
 
     /**
-     * Updates the currently authenticated Firebase user's
-     * profile information.
-     * Stores the provided display name in Firebase Authentication.
-     * Throws an exception if the profile update fails.
+      * Authenticates the user with Firebase using a Google ID token.
+
+      * This function:
+      * 1. Creates a Firebase AuthCredential from the Google ID token.
+      * 2. Sends the credential to Firebase Authentication.
+      * 3. Suspends until authentication completes.
+      * 4. Returns the authenticated Firebase user.
+
+      * @param idToken Google ID token received from Credential Manager.
+      * @return The authenticated Firebase user, or null if no user is available.
+      * @throws Exception If Firebase Authentication fails.
+     */
+    suspend fun signInWithGoogle(idToken: String) : FirebaseUser? {
+
+        // Create a Firebase credential from the Google ID token
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+        // Authenticate with Firebase and suspend until the request completes
+        val authResult =
+            firebaseAuth
+                .signInWithCredential(credential)
+                .await()
+
+        // Return the authenticated Firebase user
+        return authResult.user
+    }
+
+    /**
+     * Updates the profile information of the authenticated Firebase user.
+     *
+     * Currently, updates only the user's display name.
+     *
+     * @param user Authenticated Firebase user.
+     * @param name Display name to be stored in Firebase Authentication.
+     * @throws Exception If the profile update fails.
      */
     suspend fun updateUserProfile(
         user: FirebaseUser,
         name: String
     ){
+
         val profileUpdates =
             userProfileChangeRequest { displayName = name }
+
         user.updateProfile(profileUpdates).await()
     }
 
     /**
-     * Attempts to create a new Firebase Authentication account
-     * using the provided email and password.
-     * Returns the Firebase authentication result if successful.
-     * Throws a Firebase exception if registration fails.
+     * Creates a new Firebase Authentication account using the provided
+     * email and password.
+     *
+     * @param email User's email address.
+     * @param password User's password.
+     * @return The newly authenticated Firebase user.
+     * @throws Exception If account creation fails.
      */
     suspend fun register(
         email : String,
         password: String
-    ) : AuthResult {
-        return firebaseAuth
-            .createUserWithEmailAndPassword(email, password)
-            .await()
+    ) : FirebaseUser? {
+
+        val authResult =
+            firebaseAuth
+                .createUserWithEmailAndPassword(email, password)
+                .await()
+
+        return authResult.user
     }
 
     /**
@@ -57,6 +98,8 @@ class FirebaseAuthDataSource {
      * authenticated Firebase user.
      * This function waits until Firebase completes the request.
      * Any Firebase exceptions are propagated to the repository layer.
+     *
+     * @param user Authenticated Firebase user.
      */
     suspend fun sendVerificationEmail(user : FirebaseUser){
         user.sendEmailVerification()
@@ -64,9 +107,13 @@ class FirebaseAuthDataSource {
     }
 
     /**
-     * Refreshes the currently authenticated Firebase user
-     * from the Firebase server.
-     * This function waits until Firebase completes the request.
+     * Reloads the authenticated user's information from Firebase.
+     *
+     * This fetches the latest account state from the server, such as
+     * email verification status or profile updates.
+     *
+     * @param user Authenticated Firebase user.
+     * @throws Exception If the reload operation fails.
      */
     suspend fun reloadUser(user : FirebaseUser){
         user.reload()
@@ -74,25 +121,31 @@ class FirebaseAuthDataSource {
     }
 
     /**
-     * Attempts to sign in using Firebase Authentication
-     * and returns the Firebase authentication result.
-     * Throws a Firebase exception if authentication fails.
+     * Signs in an existing user using email and password.
+     *
+     * @param email User's email address.
+     * @param password User's password.
+     * @return The authenticated Firebase user.
+     * @throws Exception If authentication fails.
      */
     suspend fun login(
         email : String,
         password : String
-    ) : AuthResult {
-        return firebaseAuth
-            .signInWithEmailAndPassword(email, password)
-            .await()
-                    // Suspends the coroutine until the Firebase login task completes,
-                    // then returns the resulting AuthResult.
+    ) : FirebaseUser? {
+
+        val authResult =
+            firebaseAuth
+                .signInWithEmailAndPassword(email, password)
+                .await()    // Suspend until Firebase completes authentication.
+
+        return authResult.user
     }
 
     /**
-     * Sends a password reset email to the provided email address.
-     * This function waits until Firebase completes the request.
-     * Any Firebase exceptions are propagated to the repository layer.
+     * Sends a password reset email to the specified email address.
+     *
+     * @param email Email address associated with the Firebase account.
+     * @throws Exception If the request fails.
      */
     suspend fun forgotPassword(email : String) {
         firebaseAuth.sendPasswordResetEmail(email)
@@ -100,8 +153,9 @@ class FirebaseAuthDataSource {
     }
 
     /**
-     * Signs out the currently authenticated Firebase user.
-     * Clears the local authentication session.
+     * Signs out the currently authenticated user.
+     *
+     * This clears the local Firebase Authentication session on the device.
      */
     fun logout(){ firebaseAuth.signOut() }
 

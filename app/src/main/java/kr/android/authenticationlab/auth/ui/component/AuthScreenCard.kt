@@ -86,11 +86,23 @@ fun AuthScreenCard(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next,
                     leadingIcon = Icons.Default.Person,
-                    leadingIconContentDescription = "name"
+                    leadingIconContentDescription = "name",
+                    supportingText = {
+                        Text(
+                            text = "${name.length}/${AuthValidator.MAX_NAME_LENGTH}",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color =
+                                if (name.length >= AuthValidator.MIN_NAME_LENGTH) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    }
                 )
             }
-
-            Spacer(Modifier.height(4.dp))
 
             //email field
             AuthOutlinedTextField(

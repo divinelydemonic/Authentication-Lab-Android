@@ -4,8 +4,31 @@ import android.util.Patterns
 
 object AuthValidator {
 
+
+    const val MIN_NAME_LENGTH = 2
+    const val MAX_NAME_LENGTH = 50
     const val MIN_PASSWORD_LENGTH = 8
     const val MAX_PASSWORD_LENGTH = 16
+
+    /**
+     * Validates the entered name
+     */
+    fun validateName(name: String): ValidationResult {
+
+        return when {
+
+            name.isBlank() ->
+                ValidationResult.Failure("Please enter your name.")
+
+            name.length < MIN_NAME_LENGTH ->
+                ValidationResult.Failure("Name must be at least 2 characters.")
+
+            name.length > MAX_NAME_LENGTH ->
+                ValidationResult.Failure("Name cannot exceed 50 characters.")
+
+            else -> ValidationResult.Success
+        }
+    }
 
     /**
      * Validates the email against

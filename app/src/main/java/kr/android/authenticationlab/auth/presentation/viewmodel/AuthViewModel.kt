@@ -1,5 +1,6 @@
 package kr.android.authenticationlab.auth.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.FirebaseNetworkException
@@ -40,7 +41,7 @@ class AuthViewModel(
     init { checkAuthState() }
 
     /**
-     * Checks whether an authenticated Firebase session
+     * Checks whether an authenticated user session
      * already exists when the ViewModel is created.
      *
      * If a session exists, verifies the user's email
@@ -59,41 +60,70 @@ class AuthViewModel(
 
             if (user == null) {
                 // No authenticated session exists.
-                _currentUser.value = null
-                _authState.value = AuthState.Unauthenticated
+                clearAuthenticatedUser()
                 return@launch
             }
 
-            val verificationResult = repository.isEmailVerified()
+            verifyAuthenticatedUser(user)
+        }
 
-            verificationResult.fold(
-                onSuccess = { isVerified ->
-                    if (isVerified){
-                        _currentUser.value = user
-                        _authState.value = AuthState.Authenticated
-                    } else {
-                        _currentUser.value = null
-                        _authState.value = AuthState.EmailVerificationRequired
-                        emitMessage("Please verify your email to continue.")
-                    }
+    }
+
+    /**
+     * Authenticates the user using a Google ID token.
+     *
+     * Since Google accounts are already email verified, a successful
+     * authentication immediately updates the authentication state.
+     *
+     * @param idToken Google ID token obtained from Credential Manager.
+     */
+    fun signInWithGoogle(idToken : String){
+
+        viewModelScope.launch {
+
+            _authState.value = AuthState.Authenticating
+
+            val signInResult = repository.signInWithGoogle(idToken)
+
+            signInResult.fold(
+                onSuccess = { user ->
+
+                    _currentUser.value = user
+                    _authState.value = AuthState.Authenticated
+
+                    emitMessage("Signed in successfully.")
                 },
                 onFailure = { exception ->
-                    _currentUser.value = null
-                    _authState.value = AuthState.Unauthenticated
+
+                    clearAuthenticatedUser()
                     emitMessage(getReadableErrorMessage(exception))
                 }
             )
-        }
 
+        }
+    }
+
+    /**
+     * Handles errors that occur during the Google Sign-In flow
+     * before Firebase authentication begins.
+     *
+     * Emits a user-friendly message describing the error without
+     * modifying the current authentication state.
+     *
+     * @param exception The exception thrown during the Google Sign-In process.
+     */
+    fun handleGoogleSignInError(exception: Exception) {
+        viewModelScope.launch {
+            emitMessage(getReadableErrorMessage(exception))
+        }
     }
 
     /**
      * Attempts to register a new user using the provided
      * name, email, password, and password confirmation.
      *
-     * Validates the input, creates a new Firebase Authentication
-     * account, and sends an email verification link to the
-     * registered user.
+     * Validates the input, registers a new user account,
+     * and sends an email verification link to the registered user.
      *
      * On successful registration, transitions the authentication
      * state to EmailVerificationRequired. The user is not
@@ -112,6 +142,9 @@ class AuthViewModel(
 
             val trimmedName = name.trim()
             val trimmedEmail = email.trim()
+
+            if (!handleValidation(AuthValidator.validateName(trimmedName)))
+                return@launch
 
             if (!handleValidation(AuthValidator.validateEmail(trimmedEmail)))
                 return@launch
@@ -133,8 +166,7 @@ class AuthViewModel(
                 },
                 onFailure = { exception ->
                     val errorMessage = getReadableErrorMessage(exception)
-                    _currentUser.value = null
-                    _authState.value = AuthState.Unauthenticated
+                    clearAuthenticatedUser()
                     emitMessage(errorMessage)
                 }
             )
@@ -142,15 +174,14 @@ class AuthViewModel(
     }
 
     /**
-     * Checks whether the currently authenticated user's
-     * email address has been verified.
+     * Refreshes the current user's email verification status.
      *
-     * Refreshes the user's verification status through the
-     * repository and updates the authentication state
-     * accordingly.
+     * If the email has been verified, the user is marked as
+     * authenticated. Otherwise, the authentication state
+     * remains EmailVerificationRequired.
      *
-     * Emits a user-friendly message when the email has not
-     * yet been verified or when the verification check fails.
+     * Emits a user-friendly message when verification has not
+     * yet completed or when the verification check fails.
      */
     fun verifyEmail(){
 
@@ -234,37 +265,14 @@ class AuthViewModel(
             val result = repository.login(trimmedEmail, password)
 
             result.fold(
-                onSuccess = { user ->
-
-                    val verificationResult = repository.isEmailVerified()
-
-                    verificationResult.fold(
-                        onSuccess = { isVerified ->
-                            // Update the authentication state with the logged-in user.
-                            if (isVerified){
-                                _currentUser.value = user
-                                _authState.value = AuthState.Authenticated
-                            } else {
-                                _currentUser.value = null
-                                _authState.value = AuthState.EmailVerificationRequired
-                                emitMessage("Please verify your email before signing in.")
-                            }
-                        },
-                        onFailure = { exception ->
-                            _currentUser.value = null
-                            _authState.value = AuthState.Unauthenticated
-                            emitMessage(getReadableErrorMessage(exception))
-                        }
-                    )
-                },
+                onSuccess = { user -> verifyAuthenticatedUser(user) },
                 onFailure = { exception ->
 
                     // Convert the authentication exception into a user-friendly message.
                     val errorMessage = getReadableErrorMessage(exception)
 
                     // Authentication failed. Emit a user-friendly error message
-                    _currentUser.value = null
-                    _authState.value = AuthState.Unauthenticated
+                    clearAuthenticatedUser()
                     emitMessage(errorMessage)
 
                 }
@@ -301,28 +309,28 @@ class AuthViewModel(
     }
 
     /**
-     * Signs the current user out and
-     * resets the authentication state.
+     * Signs out the current user and clears all
+     * authentication-related state held by the ViewModel.
      */
     fun logout(){
         repository.logout()
-        _currentUser.value = null
-        _authState.value = AuthState.Unauthenticated
+        clearAuthenticatedUser()
     }
 
 
     /**
-     * Emits a one-time UI event requesting
-     * the presentation layer to display
-     * an error message.
+     * Emits a one-time UI event requesting the
+     * presentation layer to display a snackbar message.
      */
     private suspend fun emitMessage(message : String) {
         _uiEvents.emit(UiEvent.ShowSnackBar(message))
     }
 
     /**
-     * Converts technical authentication exceptions
-     * into user-friendly messages suitable for display.
+     * Maps authentication-related exceptions to
+     * user-friendly messages suitable for display.
+     *
+     * Unknown exceptions fall back to a generic error message.
      */
     private fun getReadableErrorMessage(
         exception: Throwable?
@@ -350,9 +358,10 @@ class AuthViewModel(
     }
 
     /**
-     * Processes a validation result.
-     * Returns true when validation succeeds.
-     * Emits a snackBar message and returns false when validation fails.
+     * Processes the result of an input validation.
+     *
+     * @return true if validation succeeds; otherwise emits
+     * a snackbar message and returns false.
      */
     private suspend fun handleValidation(
         result: ValidationResult
@@ -367,6 +376,46 @@ class AuthViewModel(
             }
 
         }
+    }
+
+    /**
+     * Clears the current authenticated user and resets
+     * the authentication state to Unauthenticated.
+     */
+    private fun clearAuthenticatedUser() {
+        _currentUser.value = null
+        _authState.value = AuthState.Unauthenticated
+    }
+
+    /**
+     * Checks whether the authenticated user's email address
+     * has been verified.
+     *
+     * Updates the authentication state and current user
+     * based on the verification result.
+     *
+     * @param user The authenticated user returned by the repository.
+     */
+    private suspend fun verifyAuthenticatedUser(user: UserData) {
+
+        val verificationResult = repository.isEmailVerified()
+
+        verificationResult.fold(
+            onSuccess = { isVerified ->
+                if (isVerified) {
+                    _currentUser.value = user
+                    _authState.value = AuthState.Authenticated
+                } else {
+                    _currentUser.value = null
+                    _authState.value = AuthState.EmailVerificationRequired
+                    emitMessage("Please verify your email before signing in.")
+                }
+            },
+            onFailure = { exception ->
+                clearAuthenticatedUser()
+                emitMessage(getReadableErrorMessage(exception))
+            }
+        )
     }
 
 }
