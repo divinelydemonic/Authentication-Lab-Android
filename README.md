@@ -1,201 +1,274 @@
 # 🔐 Authentication Lab
 
-A modern Android authentication application built using **Kotlin**, **Jetpack Compose**, **MVVM**, and **Firebase Authentication**.
+A modern Android authentication application built using **Kotlin**, **Jetpack Compose**, **Firebase Authentication**, and **MVVM Architecture**. This project demonstrates secure user authentication using Email/Password and Google Sign-In while following clean architecture principles and Android development best practices.
 
-This project demonstrates a production-inspired authentication flow with clean architecture principles, reactive UI using StateFlow & SharedFlow, and proper separation of concerns. It serves as both a learning project and a portfolio application showcasing Android development best practices.
+> 🚀 This project is part of my Android development portfolio, showcasing production-oriented architecture, modern UI development with Jetpack Compose, and Firebase Authentication integration.
+
+---
+
+# 📑 Table of Contents
+
+- [📱 App Overview](#-app-overview)
+- [✨ Features](#-features)
+- [🛠 Tech Stack](#-tech-stack)
+- [🏗 Architecture](#-architecture)
+- [🔄 App Flow](#-app-flow)
+- [📸 Screenshots / Demo](#-screenshots--demo)
+- [🌐 Firebase Integration](#-firebase-integration)
+- [📂 Project Structure](#-project-structure)
+- [🎯 Use Cases](#-use-cases)
+- [🚧 Future Improvements](#-future-improvements)
+- [⚙️ Getting Started](#️-getting-started)
+- [🙋 About Me](#-about-me)
+- [📄 License](#-license)
 
 ---
 
 # 📱 App Overview
 
-This is an Android application that demonstrates how to build a scalable authentication system using Firebase Authentication and Jetpack Compose.
+Authentication Lab is a modern Android authentication application that demonstrates secure user authentication using **Firebase Authentication**. Users can create an account, log in using Email/Password, sign in with Google, reset forgotten passwords, and securely manage authentication state.
 
-Instead of simply implementing login functionality, this project focuses on building authentication using real-world Android architecture with proper separation between UI, business logic, and data layers.
+The project focuses on implementing authentication using **real-world Android architecture**, making it an excellent reference for developers learning Firebase Authentication and Jetpack Compose.
 
 ### Problem it solves
 
-Many beginner authentication projects tightly couple Firebase APIs with UI code, making them difficult to maintain and extend.
-
-This project demonstrates a clean and scalable approach using MVVM, Repository Pattern, Data Source abstraction, reactive state management, and centralized UI event handling.
+Authentication is one of the most fundamental features of modern mobile applications. This project demonstrates how to implement authentication in a clean, scalable, and maintainable way while following Android best practices.
 
 ---
 
 # ✨ Features
 
-- ✅ User Registration using Email & Password
-- ✅ User Login
-- ✅ User Logout
-- ✅ Session Persistence
-- ✅ Automatic Authentication State Detection
-- ✅ Reactive UI using StateFlow
-- ✅ One-time UI Events using SharedFlow
-- ✅ Centralized Snackbar Handling
-- ✅ Firebase Exception Mapping to User-Friendly Messages
-- ✅ Repository Pattern
-- ✅ Data Source Layer
-- ✅ Clean Separation of Concerns
-- 🚧 Email & Password Validation (Planned)
-- 🚧 Forgot Password (Planned)
-- 🚧 Google Sign-In (Planned)
+- 🔐 Email & Password Registration
+- 🔑 Email & Password Login
+- 🔓 Google Sign-In using Android Credential Manager
+- 📧 Password Reset via Email
+- ✅ Email Verification Support
+- 🎨 Fully Jetpack Compose UI
+- 🧩 Reusable UI Components
+- 📱 Responsive Material 3 Design
+- 🧠 Input Validation
+- ⚠️ User-Friendly Error Messages
+- 🔄 Authentication State Management
+- 🏗 MVVM Architecture
+- 🔥 Firebase Authentication Integration
 
 ---
 
 # 🛠 Tech Stack
 
-### Language
-
-- Kotlin
-
-### UI
-
-- Jetpack Compose
-- Material 3
-
-### Architecture
-
-- MVVM
-- Repository Pattern
-- Data Source Pattern
-
-### Asynchronous Programming
-
-- Kotlin Coroutines
-- StateFlow
-- SharedFlow
-
-### Backend
-
-- Firebase Authentication
-
-### Other Libraries
-
-- AndroidX Lifecycle
-- Kotlin Flow
-- Firebase KTX
+| Category | Technology |
+|----------|------------|
+| Language | Kotlin |
+| UI Toolkit | Jetpack Compose |
+| Architecture | MVVM |
+| State Management | StateFlow |
+| Dependency Management | Gradle Kotlin DSL |
+| Authentication | Firebase Authentication |
+| Google Sign-In | Android Credential Manager |
+| UI Design | Material 3 |
+| Asynchronous Programming | Kotlin Coroutines |
 
 ---
 
 # 🏗 Architecture
 
-The application follows the MVVM architecture with a Repository and Data Source layer to keep Firebase implementation details isolated from the UI.
+This project follows the **MVVM (Model-View-ViewModel)** architecture to maintain a clear separation of concerns.
+
+- **UI Layer**
+  - Displays UI
+  - Handles user interactions
+
+- **ViewModel**
+  - Holds UI state
+  - Processes user actions
+  - Coordinates business logic
+
+- **Repository**
+  - Acts as a single source of truth
+  - Abstracts data operations
+
+- **Data Source**
+  - Handles communication with Firebase Authentication
+
+- **Firebase**
+  - Authenticates users securely
+
+## Data Flow
 
 ```mermaid
-graph LR
+flowchart LR
 
-A[Compose UI]
---> B[ViewModel]
+UI["Jetpack Compose UI"]
+VM["AuthViewModel"]
+Repo["AuthRepository"]
+DS["FirebaseAuthDataSource"]
+Firebase["Firebase Authentication"]
 
-B --> C[Repository]
-
-C --> D[Firebase Data Source]
-
-D --> E[Firebase Authentication]
+UI --> VM
+VM --> Repo
+Repo --> DS
+DS --> Firebase
+Firebase --> DS
+DS --> Repo
+Repo --> VM
+VM --> UI
 ```
-
-### Layer Responsibilities
-
-**UI**
-
-- Displays state
-- Sends user actions to ViewModel
-- Observes StateFlow and SharedFlow
-
-**ViewModel**
-
-- Business logic
-- State management
-- UI event emission
-- Authentication flow
-
-**Repository**
-
-- Converts Firebase models into application models
-- Handles authentication operations
-
-**Data Source**
-
-- Direct communication with Firebase Authentication SDK
 
 ---
 
 # 🔄 App Flow
 
-1. User launches the application.
-2. Existing authentication session is checked.
-3. If authenticated, user is navigated to the Home screen.
-4. Otherwise, Login screen is displayed.
-5. User can Login or Register using Email & Password.
-6. Authentication request is sent to Firebase.
-7. Repository maps Firebase models into application models.
-8. ViewModel updates authentication state.
-9. UI reacts automatically to state changes.
-10. Errors are displayed using centralized Snackbars.
-
----
-
-# 📸 Screenshots
-
-| Login | Register | Loading | Home |
-|-------|----------|---------|------|
-| <img src="snapshots/LoginScreen.png" height=500> | <img src="snapshots/RegistrationScreen.png" height=500> | <img src="snapshots/LoadingScreen.png" height=500> | <img src="snapshots/HomeScreen.png" height=500> |
-
----
-
-# 🌐 API Integration
-
-### Firebase Authentication
-
-Used for:
-
-- User Registration
-- User Login
-- User Logout
-- Session Persistence
-
-### Data Flow
-
-```
-UI
- ↓
-ViewModel
- ↓
-Repository
- ↓
-Firebase Data Source
- ↓
+```text
+Launch App
+      │
+      ▼
+Authentication Screen
+      │
+      ├───────────────┐
+      │               │
+      ▼               ▼
+Login             Register
+      │               │
+      ▼               ▼
 Firebase Authentication
+      │
+      ▼
+Authentication Successful
+      │
+      ▼
+Authenticated User
 ```
 
-### Error Handling
+### User Journey
 
-- Firebase exceptions are mapped into user-friendly messages.
-- Errors are emitted as one-time UI events using SharedFlow.
-- Snackbars are displayed from a centralized location in the application.
+1. Open the application.
+2. Choose one of the available authentication methods.
+3. Register a new account or log in with an existing account.
+4. Authenticate using Firebase Authentication.
+5. Receive authentication status.
+6. Access the authenticated section of the application.
+
+---
+
+# 📸 Screenshots / Demo
+
+## Authentication Screen
+
+> *(Add screenshot here)*
+
+```
+assets/screenshots/authentication.png
+```
+
+---
+
+## Login Screen
+
+> *(Add screenshot here)*
+
+```
+assets/screenshots/login.png
+```
+
+---
+
+## Registration Screen
+
+> *(Add screenshot here)*
+
+```
+assets/screenshots/register.png
+```
+
+---
+
+## Forgot Password Screen
+
+> *(Add screenshot here)*
+
+```
+assets/screenshots/forgot-password.png
+```
+
+---
+
+## Demo Video
+
+🎥 **YouTube Demo**
+
+```
+https://youtube.com/your-video-link
+```
+
+---
+
+# 🌐 Firebase Integration
+
+This project uses **Firebase Authentication** for secure user authentication.
+
+## Authentication Methods
+
+- Email & Password Authentication
+- Google Sign-In using Credential Manager
+
+## Authentication Flow
+
+```text
+User Input
+     │
+     ▼
+ViewModel
+     │
+     ▼
+Repository
+     │
+     ▼
+Firebase Authentication
+     │
+     ▼
+Authentication Result
+```
+
+## Error Handling
+
+The application gracefully handles common authentication scenarios, including:
+
+- Invalid email address
+- Incorrect password
+- User not found
+- Weak password
+- Email already registered
+- Network connectivity issues
+- Google Sign-In cancellation
+- Unexpected Firebase exceptions
 
 ---
 
 # 📂 Project Structure
 
-```
+```text
 app
 │
 ├── auth
 │   ├── data
+│   │   ├── datasource
 │   │   ├── model
-│   │   ├── remote
-│   │   └── repository
+│   │   ├── repository
+│   │   └── mapper
 │   │
 │   ├── presentation
-│   │   ├── authstate
-│   │   ├── event
-│   │   ├── viewmodel
-│   │   └── ui
+│   │   ├── model
+│   │   └── viewmodel
+│   │
+│   ├── ui
+│   │   ├── component
+│   │   └── screen
+│   │
+│   ├── validation
+│   └── credential
 │
 ├── navigation
-│
-├── ui
-│   └── theme
-│
+├── theme
 └── MainActivity.kt
 ```
 
@@ -203,80 +276,51 @@ app
 
 # 🎯 Use Cases
 
-This project demonstrates:
+This project is useful for:
 
-- Firebase Authentication implementation
-- Modern Android architecture
-- Reactive UI development
-- Repository Pattern
-- StateFlow & SharedFlow usage
-- Production-inspired authentication flow
-
-Useful for:
-
-- Android Developers
-- Students learning Firebase
-- Portfolio Showcase
-- Interview Preparation
-- MVVM Practice
+- 📚 Learning Firebase Authentication
+- 📱 Understanding modern Android architecture
+- 🎓 Students learning Jetpack Compose
+- 💼 Portfolio demonstration
+- 🚀 Starting point for authentication-based Android applications
+- 👨‍💻 Developers exploring Android Credential Manager
 
 ---
 
 # 🚧 Future Improvements
 
-- Email Validation
-- Password Strength Validation
-- Confirm Password
-- Forgot Password
-- Google Sign-In
-- Email Verification
-- Password Visibility Animation
-- Remember Me
-- Biometric Authentication
-- Hilt Dependency Injection
-- Unit Testing
-- UI Testing
-- Offline Authentication Cache
-- Multi-Factor Authentication (MFA)
+Planned enhancements include:
+
+- 🔐 Phone Number Authentication
+- 🍎 Sign in with Apple (where applicable)
+- 👤 User Profile Management
+- 🖼 Profile Picture Upload
+- ✏️ Update Email & Password
+- 🔄 Session Persistence Improvements
+- 🌙 Enhanced Theming
+- 🌍 Localization Support
+- 🧪 Unit & UI Testing
+- 📊 Firebase Analytics Integration
+- 🔔 Push Notifications
+- ☁️ Firestore User Profile Storage
 
 ---
 
-# 📚 Learning Highlights
+## 🤝 Open to Freelancing
 
-This project focuses on understanding **why** architectural decisions are made instead of simply implementing authentication.
+I'm currently open to freelance opportunities involving:
 
-Concepts explored include:
+- Android App Development
+- Jetpack Compose
+- Kotlin
+- Firebase
+- UI/UX Implementation
+- Bug Fixing & Feature Development
 
-- MVVM Architecture
-- Repository Pattern
-- Data Source Pattern
-- State vs Events
-- StateFlow vs SharedFlow
-- Firebase Model Mapping
-- Separation of Concerns
-- Clean Code Practices
-- Reactive UI with Jetpack Compose
+If you'd like to collaborate, feel free to reach out!
 
 ---
 
-# 🤝 Portfolio
+# 📄 License
 
-This project is part of my Android Development portfolio and showcases modern Android development practices with Jetpack Compose and Firebase.
-
-I'm continuously improving this project by adding new authentication features and refining the architecture.
-
----
-
-# 💼 Freelancing
-
-I'm currently open to freelance Android development opportunities.
-
-If you'd like to collaborate or discuss a project, feel free to connect with me.
-
----
-
-# ⭐ Support
-
-If you found this project helpful, consider giving it a ⭐ on GitHub!
-
-It helps support my work and motivates me to continue building and sharing Android projects.
+This project is licensed under the MIT License.
