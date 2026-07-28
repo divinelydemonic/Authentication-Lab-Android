@@ -154,41 +154,40 @@ Authenticated User
 
 ## Authentication Screen
 
-> *(Add screenshot here)*
-
-```
-assets/screenshots/authentication.png
-```
+<p>
+<img src="/assets/login_light.png" height=500>
+<img src="/assets/login_dark.png" height=500>
+<img src="/assets/sign_up_light.png" height=500>
+<img src="/assets/sign_up_dark.png" height=500>
+</p>
 
 ---
 
 ## Home Screen
 
-> *(Add screenshot here)*
-
-```
-assets/screenshots/home.png
-```
+<p align="Center">
+  <img src="/assets/home_screen_light.png" height=500>
+  <img src="/assets/home_screen_dark.png" height=500>
+</p>
 
 ---
 
 ## Email Verification Screen
 
-> *(Add screenshot here)*
-
-```
-assets/screenshots/email-verification.png
-```
+<p align="Center">
+  <img src="/assets/verify_email_light.png" height=500>
+  <img src="/assets/verify_email_dark.png" height=500>
+</p>
 
 ---
 
 ## Forgot Password Screen
 
-> *(Add screenshot here)*
+<p align="Center">
+  <img src="/assets/forgot_password_light.png" height=500>
+  <img src="/assets/forgot_password_dark.png" height=500>
+</p>
 
-```
-assets/screenshots/forgot-password.png
-```
 
 ---
 
