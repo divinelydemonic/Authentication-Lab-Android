@@ -196,7 +196,7 @@ Authenticated User
 🎥 **YouTube Demo**
 
 ```
-https://youtube.com/video-link
+https://youtube.com/video-link](https://youtube.com/shorts/paLPeAMp7Sk?feature=share)
 ```
 
 ---
