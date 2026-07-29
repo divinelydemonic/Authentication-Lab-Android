@@ -18,8 +18,6 @@ A modern Android authentication application built using **Kotlin**, **Jetpack Co
 - [📂 Project Structure](#-project-structure)
 - [🎯 Use Cases](#-use-cases)
 - [🚧 Future Improvements](#-future-improvements)
-- [⚙️ Getting Started](#️-getting-started)
-- [🙋 About Me](#-about-me)
 - [📄 License](#-license)
 
 ---
