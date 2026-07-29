@@ -210,7 +210,7 @@ Authenticated User
 🎥 **YouTube Demo**
 
 ```
-https://youtube.com/shorts/5Jzg2NDVh0k?feature=share
+https://x.com/kushalreya/status/2082106848979931293?s=20
 ```
 
 ---
