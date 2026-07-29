@@ -154,12 +154,28 @@ Authenticated User
 
 ## Authentication Screen
 
-<p>
-<img src="/assets/login_light.png" height=500>
-<img src="/assets/login_dark.png" height=500>
-<img src="/assets/sign_up_light.png" height=500>
-<img src="/assets/sign_up_dark.png" height=500>
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <img src="/assets/login_light.png" height="500" alt="Login Light"><br>
+      <b>Login (Light)</b>
+    </td>
+    <td align="center">
+      <img src="/assets/login_dark.png" height="500" alt="Login Dark"><br>
+      <b>Login (Dark)</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="/assets/sign_up_light.png" height="500" alt="Sign Up Light"><br>
+      <b>Sign Up (Light)</b>
+    </td>
+    <td align="center">
+      <img src="/assets/sign_up_dark.png" height="500" alt="Sign Up Dark"><br>
+      <b>Sign Up (Dark)</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
